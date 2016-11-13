@@ -1,20 +1,25 @@
-const http = require('http');
+const express = require('express');
 
-http.createServer((req, res) => {
-  // normalize url by removing query string, optional traililng slash, and making it lower case
-  const path = req.url.replace(/\/?(?:\?.*)?$/, '').toLowerCase();
-  switch (path) {
-    case '':
-      res.writeHead(200, { 'Content-Type': 'text/plain' });
-      res.end('Homepage');
-      break;
-    case '/about':
-      res.writeHead(200, { 'Content-Type': 'text/plain' });
-      res.end('About');
-      break;
-    default:
-      res.writeHead(404, { 'Content-Type': 'text/plain' });
-      res.end('Not Found');
-      break;
-  }
-}).listen(3000);
+const app = express();
+
+const handlebars = require('express-handlebars').create({ defaultLayout: 'main' });
+
+app.engine('handlebars', handlebars.engine);
+app.set('view engine', 'handlebars');
+
+app.set('port', process.env.PORT || 3000);
+app.use(express.static(`${__dirname}/public`));
+
+app.listen(app.get('port'), () => {
+  console.log(`started listening on https://localhost:${app.get('port')}, press ctrl c to termiante`);
+});
+
+app.get('/', (req, res) => {
+  res.render('home');
+});
+
+app.use((req, res) => {
+  res.status(404);
+  res.render('404');
+});
+
